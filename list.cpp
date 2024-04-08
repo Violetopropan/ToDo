@@ -6,6 +6,7 @@
 #include <sstream>
 #include <random>
 #include <windows.h>
+#include <conio.h> // Добавляем заголовочный файл для функции _getch()
 
 class User {
 private:
@@ -160,7 +161,20 @@ void login(Database& database) {
     std::cout << "Введите имя пользователя: ";
     std::cin >> username;
     std::cout << "Введите пароль: ";
-    std::cin >> password;
+    char ch;
+    password = "";
+    while ((ch = _getch()) != '\r') { // Считываем символы без отображения
+        if (ch == '\b') { // Если нажата клавиша Backspace
+            if (!password.empty()) {
+                std::cout << "\b \b"; // Стираем символ с консоли
+                password.pop_back(); // Удаляем последний символ из строки пароля
+            }
+        } else {
+            std::cout << '*'; // Выводим символ * вместо введенного символа
+            password += ch; // Добавляем символ к паролю
+        }
+    }
+    std::cout << std::endl;
     User* user = database.authenticateUser(username, password);
     if (user != nullptr) {
         std::cout << "Аутентификация прошла успешно!" << std::endl;
@@ -175,7 +189,20 @@ void registerUser(Database& database) {
     std::cout << "Введите имя пользователя: ";
     std::cin >> username;
     std::cout << "Введите пароль: ";
-    std::cin >> password;
+    char ch;
+    password = "";
+    while ((ch = _getch()) != '\r') { // Считываем символы без отображения
+        if (ch == '\b') { // Если нажата клавиша Backspace
+            if (!password.empty()) {
+                std::cout << "\b \b"; // Стираем символ с консоли
+                password.pop_back(); // Удаляем последний символ из строки пароля
+            }
+        } else {
+            std::cout << '*'; // Выводим символ * вместо введенного символа
+            password += ch; // Добавляем символ к паролю
+        }
+    }
+    std::cout << std::endl;
     if (database.registerUser(username, password)) {
         std::cout << "Пользователь успешно зарегистрирован!" << std::endl;
     } else {
@@ -301,4 +328,4 @@ int main() {
         }
     }
     return 0;
-}
+}   
