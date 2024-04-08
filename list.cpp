@@ -6,7 +6,7 @@
 #include <sstream>
 #include <random>
 #include <windows.h>
-#include <conio.h> // Добавляем заголовочный файл для функции _getch()
+#include <conio.h> 
 
 class User {
 private:
@@ -163,15 +163,15 @@ void login(Database& database) {
     std::cout << "Введите пароль: ";
     char ch;
     password = "";
-    while ((ch = _getch()) != '\r') { // Считываем символы без отображения
-        if (ch == '\b') { // Если нажата клавиша Backspace
+    while ((ch = _getch()) != '\r') { 
+        if (ch == '\b') { 
             if (!password.empty()) {
-                std::cout << "\b \b"; // Стираем символ с консоли
-                password.pop_back(); // Удаляем последний символ из строки пароля
+                std::cout << "\b \b"; 
+                password.pop_back(); 
             }
         } else {
-            std::cout << '*'; // Выводим символ * вместо введенного символа
-            password += ch; // Добавляем символ к паролю
+            std::cout << '*';
+            password += ch; 
         }
     }
     std::cout << std::endl;
@@ -191,15 +191,15 @@ void registerUser(Database& database) {
     std::cout << "Введите пароль: ";
     char ch;
     password = "";
-    while ((ch = _getch()) != '\r') { // Считываем символы без отображения
-        if (ch == '\b') { // Если нажата клавиша Backspace
+    while ((ch = _getch()) != '\r') { 
+        if (ch == '\b') { 
             if (!password.empty()) {
-                std::cout << "\b \b"; // Стираем символ с консоли
-                password.pop_back(); // Удаляем последний символ из строки пароля
+                std::cout << "\b \b"; 
+                password.pop_back(); 
             }
         } else {
-            std::cout << '*'; // Выводим символ * вместо введенного символа
-            password += ch; // Добавляем символ к паролю
+            std::cout << '*'; 
+            password += ch; 
         }
     }
     std::cout << std::endl;
