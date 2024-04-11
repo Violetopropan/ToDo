@@ -6,7 +6,10 @@
 #include <sstream>
 #include <random>
 #include <windows.h>
-#include <conio.h> 
+#include <conio.h>
+#include <limits>
+#include <regex>
+#include <string>
 
 class User {
 private:
@@ -31,7 +34,7 @@ private:
 public:
     Task(std::string userId, std::string text) : userId(userId), text(text) {
         id = generate_uuid();
-        std::time_t t = std::time(nullptr);
+        std::time_t t = std::time(nullptr);    
         std::ostringstream oss;
         oss << std::put_time(std::gmtime(&t), "%Y-%m-%d %H:%M:%S");
         date = oss.str();
@@ -134,6 +137,11 @@ public:
     }
 };
 
+bool isValidUUID(const std::string& uuid) {
+    std::regex uuidRegex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    return std::regex_match(uuid, uuidRegex);
+}
+
 void printMainMenu() {
     std::cout << "\nГлавное меню:" << std::endl;
     std::cout << "1. Войти" << std::endl;
@@ -163,15 +171,15 @@ void login(Database& database) {
     std::cout << "Введите пароль: ";
     char ch;
     password = "";
-    while ((ch = _getch()) != '\r') { 
-        if (ch == '\b') { 
+    while ((ch = _getch()) != '\r') { // Считываем символы без отображения
+        if (ch == '\b') { // Если нажата клавиша Backspace
             if (!password.empty()) {
-                std::cout << "\b \b"; 
-                password.pop_back(); 
+                std::cout << "\b \b"; // Стираем символ с консоли
+                password.pop_back(); // Удаляем последний символ из строки пароля
             }
         } else {
-            std::cout << '*';
-            password += ch; 
+            std::cout << '*'; // Выводим символ * вместо введенного символа
+            password += ch; // Добавляем символ к паролю
         }
     }
     std::cout << std::endl;
@@ -191,15 +199,15 @@ void registerUser(Database& database) {
     std::cout << "Введите пароль: ";
     char ch;
     password = "";
-    while ((ch = _getch()) != '\r') { 
-        if (ch == '\b') { 
+    while ((ch = _getch()) != '\r') { // Считываем символы без отображения
+        if (ch == '\b') { // Если нажата клавиша Backspace
             if (!password.empty()) {
-                std::cout << "\b \b"; 
-                password.pop_back(); 
+                std::cout << "\b \b"; // Стираем символ с консоли
+                password.pop_back(); // Удаляем последний символ из строки пароля
             }
         } else {
-            std::cout << '*'; 
-            password += ch; 
+            std::cout << '*'; // Выводим символ * вместо введенного символа
+            password += ch; // Добавляем символ к паролю
         }
     }
     std::cout << std::endl;
@@ -223,10 +231,16 @@ void markTaskDone(Database& database) {
     std::string taskId;
     std::cout << "Введите ID выполненного дела: ";
     std::cin >> taskId;
+
+    if (!isValidUUID(taskId)) {
+        std::cout << "Некорректный формат UUID. Пожалуйста, введите корректный UUID." << std::endl;
+        return;
+    }
+
     if (database.markTaskDone(taskId)) {
         std::cout << "Дело успешно отмечено как выполненное!" << std::endl;
     } else {
-        std::cout << "Некорректный ID задачи. Пожалуйста, введите корректный." << std::endl;
+        std::cout << "Не удалось найти задачу с таким ID. Пожалуйста, введите корректный ID." << std::endl;
     }
 }
 
@@ -237,10 +251,16 @@ void updateTask(Database& database) {
     std::cout << "Введите новый текст задачи: ";
     std::cin.ignore();
     std::getline(std::cin, newText);
+
+    if (!isValidUUID(taskId)) {
+        std::cout << "Некорректный формат UUID. Пожалуйста, введите корректный UUID." << std::endl;
+        return;
+    }
+
     if (database.updateTask(taskId, newText)) {
         std::cout << "Текст задачи успешно обновлён!" << std::endl;
     } else {
-        std::cout << "Некорректный ID задачи. Пожалуйста, введите корректный." << std::endl;
+        std::cout << "Не удалось найти задачу с таким ID. Пожалуйста, введите корректный ID." << std::endl;
     }
 }
 
@@ -248,10 +268,16 @@ void deleteTask(Database& database) {
     std::string taskId;
     std::cout << "Введите ID задачи, которую хотите удалить: ";
     std::cin >> taskId;
+
+    if (!isValidUUID(taskId)) {
+        std::cout << "Некорректный формат UUID. Пожалуйста, введите корректный UUID." << std::endl;
+        return;
+    }
+
     if (database.deleteTask(taskId)) {
         std::cout << "Дело успешно удалено из ежедневника!" << std::endl;
     } else {
-        std::cout << "Некорректный ID задачи. Пожалуйста, введите корректный." << std::endl;
+        std::cout << "Не удалось найти задачу с таким ID. Пожалуйста, введите корректный ID." << std::endl;
     }
 }
 
@@ -267,12 +293,28 @@ void showTasks(Database& database, User& user) {
     }
 }
 
+int getValidInput(int min, int max) {
+    int choice;
+    while (true) {
+        if (std::cin >> choice) {
+            if (choice >= min && choice <= max) {
+                return choice;  // Возврат корректного значения
+            } else {
+                std::cout << "Введённое число вне допустимого диапазона. Попробуйте снова.\n";
+            }
+        } else {
+            std::cout << "Некорректный ввод. Пожалуйста, введите число.\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
+}
+
 void showUserMenu(Database& database, User& user) {
     bool loggedIn = true;
     while (loggedIn) {
         printUserMenu();
-        int choice;
-        std::cin >> choice;
+        int choice = getValidInput(1, 7);
         switch (choice) {
             case 1:
                 addTask(database, user);
@@ -310,8 +352,7 @@ int main() {
     bool running = true;
     while (running) {
         printMainMenu();
-        int choice;
-        std::cin >> choice;
+        int choice = getValidInput(1, 3);
         switch (choice) {
             case 1:
                 login(database);
